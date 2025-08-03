@@ -153,8 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
-            const proxyUrl = 'https://proxy-tesla-tv.vercel.app/?url='; // Votre proxy
-downloadLink.href = proxyUrl + encodeURIComponent(item.url);
+            downloadLink.href = item.url;
             downloadLink.textContent = 'Télécharger';
             downloadLink.setAttribute('download', ''); 
 
