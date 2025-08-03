@@ -154,7 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
             
-            const proxyBaseUrl = 'https://proxy-downloader.vercel.app/?'; 
+            // L'URL du proxy pointe maintenant vers /api/
+            const proxyBaseUrl = 'https://proxy-downloader.vercel.app/api/?'; 
+            
             const params = new URLSearchParams({
                 url: item.url,
                 title: item.title 
