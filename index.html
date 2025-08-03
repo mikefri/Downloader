@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyseur M3U Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Analyseur de Fichiers M3U</h1>
+        <p class="warning">
+            ⚠️ Assurez-vous d'avoir les droits nécessaires pour télécharger le contenu de ce fichier.
+        </p>
+
+        <div class="input-group">
+            <h2>Charger depuis une URL</h2>
+            <input type="text" id="m3u-url-input" placeholder="Collez l'URL du fichier .m3u ici">
+            <button id="load-from-url-btn">Charger</button>
+        </div>
+
+        <div class="input-group">
+            <h2>Ou charger un fichier local</h2>
+            <input type="file" id="m3u-file-input" accept=".m3u, .m3u8">
+        </div>
+
+        <div id="status"></div>
+
+        <div id="media-list">
+            </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
