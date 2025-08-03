@@ -154,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
             
-            // C'est ici que nous appelons VOTRE proxy.
             const proxyBaseUrl = 'https://proxy-downloader.vercel.app/?'; 
             const params = new URLSearchParams({
                 url: item.url,
