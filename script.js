@@ -153,9 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
+            
+            // On revient à la méthode directe
             downloadLink.href = item.url;
+            
             downloadLink.textContent = 'Télécharger';
-            downloadLink.setAttribute('download', ''); 
+            // L'attribut download est une suggestion pour le navigateur
+            downloadLink.setAttribute('download', item.title); 
 
             contentDiv.appendChild(titleP);
             contentDiv.appendChild(downloadLink);
