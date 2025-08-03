@@ -154,11 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
             
-            // On revient à la méthode directe
-            downloadLink.href = item.url;
+            // C'est ici que nous appelons VOTRE proxy.
+            const proxyBaseUrl = 'https://proxy-downloader.vercel.app/?'; 
+            const params = new URLSearchParams({
+                url: item.url,
+                title: item.title 
+            });
+            downloadLink.href = proxyBaseUrl + params.toString();
             
             downloadLink.textContent = 'Télécharger';
-            // L'attribut download est une suggestion pour le navigateur
             downloadLink.setAttribute('download', item.title); 
 
             contentDiv.appendChild(titleP);

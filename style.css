@@ -27,9 +27,9 @@ h2 {
 }
 
 .warning {
-    background-color: #442b00;
-    border: 1px solid #ffb74d;
-    color: #ffb74d;
+    background-color: #00333e;
+    border: 1px solid #03dac6;
+    color: #e0e0e0;
     padding: 10px;
     border-radius: 5px;
     text-align: center;
@@ -117,7 +117,7 @@ button:hover, .download-link:hover {
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Pour que les coins arrondis de l'image fonctionnent */
+    overflow: hidden;
     transition: transform 0.2s;
 }
 
