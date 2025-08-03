@@ -33,32 +33,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (url) {
             statusDiv.textContent = 'Chargement depuis l\'URL...';
             fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`Erreur réseau : ${response.statusText}`);
-                    return response.text();
-                })
+                .then(response => response.ok ? response.text() : Promise.reject(response.statusText))
                 .then(data => parseM3U(data))
-                .catch(error => {
-                    statusDiv.textContent = `Erreur : ${error.message}. Le serveur distant bloque peut-être la requête (CORS).`;
-                    statusDiv.style.color = 'red';
-                });
+                .catch(error => statusDiv.textContent = `Erreur : ${error}.`);
         }
     });
 
     fileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            statusDiv.textContent = 'Lecture du fichier local...';
             const reader = new FileReader();
             reader.onload = (e) => parseM3U(e.target.result);
             reader.readAsText(file);
         }
     });
 
+    // Clics sur les onglets
     Object.keys(tabs).forEach(category => {
         tabs[category].addEventListener('click', () => showCategory(category));
     });
 
+    // Recherche
     searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const activeList = document.querySelector('.media-grid.active');
@@ -73,34 +68,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Fonctions logiques ---
 
+    /**
+     * Analyse le contenu M3U et le trie dans les catégories.
+     */
     function parseM3U(m3uContent) {
         statusDiv.textContent = 'Analyse du contenu...';
-        allMedia = { films: [], series: [], chaines: [] };
+        allMedia = { films: [], series: [], chaines: [] }; // Réinitialiser
 
         const lines = m3uContent.split('\n');
         let currentItem = null;
 
         for (const line of lines) {
             const trimmedLine = line.trim();
+
             if (trimmedLine.startsWith('#EXTINF:')) {
                 const nameMatch = trimmedLine.match(/tvg-name="([^"]*)"/);
                 const groupMatch = trimmedLine.match(/group-title="([^"]*)"/);
-                const logoMatch = trimmedLine.match(/tvg-logo="([^"]*)"/);
                 const fallbackName = trimmedLine.split(',').pop();
                 
                 currentItem = {
                     title: nameMatch ? nameMatch[1].trim() : (fallbackName || 'Titre inconnu').trim(),
                     group: groupMatch ? groupMatch[1].trim().toUpperCase() : '',
-                    logo: logoMatch ? logoMatch[1] : null,
                     url: ''
                 };
+
             } else if (currentItem && (trimmedLine.startsWith('http'))) {
                 currentItem.url = trimmedLine;
+
+                // --- LOGIQUE DE TRI ---
                 if (currentItem.group.includes('FRANCE')) {
                     allMedia.chaines.push(currentItem);
                 } else if (currentItem.group.includes('SERIES')) {
                     allMedia.series.push(currentItem);
-                } else if (/\(\d{4}\)/.test(currentItem.title)) {
+                } else if (/\(\d{4}\)/.test(currentItem.title)) { // Regex pour trouver une année (####)
                     allMedia.films.push(currentItem);
                 }
                 currentItem = null;
@@ -111,41 +111,35 @@ document.addEventListener('DOMContentLoaded', () => {
         setupUI();
     }
 
+    /**
+     * Met en place l'interface après l'analyse.
+     */
     function setupUI() {
+        // Mettre à jour les compteurs
         counts.films.textContent = `(${allMedia.films.length})`;
         counts.series.textContent = `(${allMedia.series.length})`;
         counts.chaines.textContent = `(${allMedia.chaines.length})`;
 
+        // Remplir les listes
         populateList(lists.films, allMedia.films);
         populateList(lists.series, allMedia.series);
         populateList(lists.chaines, allMedia.chaines);
 
+        // Afficher la recherche et la première catégorie non vide
         searchContainer.style.display = 'block';
-        if (allMedia.films.length > 0) {
-            showCategory('films');
-        } else if (allMedia.series.length > 0) {
-            showCategory('series');
-        } else {
-            showCategory('chaines');
-        }
+        if (allMedia.films.length > 0) showCategory('films');
+        else if (allMedia.series.length > 0) showCategory('series');
+        else showCategory('chaines');
     }
 
+    /**
+     * Remplit un élément de liste avec des médias.
+     */
     function populateList(listElement, items) {
-        listElement.innerHTML = '';
-        const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMzAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzMzMyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzIyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZmlsbD0iIzU1NSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-
+        listElement.innerHTML = ''; // Vider la liste
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'media-item';
-
-            const img = document.createElement('img');
-            img.className = 'media-item-logo';
-            img.src = item.logo || placeholderLogo;
-            img.alt = item.title;
-            img.onerror = () => { img.src = placeholderLogo; };
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'media-item-content';
 
             const titleP = document.createElement('p');
             titleP.className = 'title';
@@ -157,22 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadLink.textContent = 'Télécharger';
             downloadLink.setAttribute('download', ''); 
 
-            contentDiv.appendChild(titleP);
-            contentDiv.appendChild(downloadLink);
-            
-            div.appendChild(img);
-            div.appendChild(contentDiv);
+            div.appendChild(titleP);
+            div.appendChild(downloadLink);
             listElement.appendChild(div);
         });
     }
 
+    /**
+     * Affiche une catégorie et cache les autres.
+     */
     function showCategory(categoryToShow) {
         Object.keys(tabs).forEach(category => {
             const isActive = category === categoryToShow;
             tabs[category].classList.toggle('active', isActive);
             lists[category].classList.toggle('active', isActive);
         });
-        searchInput.value = '';
-        searchInput.dispatchEvent(new Event('input'));
+        searchInput.value = ''; // Réinitialiser la recherche en changeant d'onglet
+        searchInput.dispatchEvent(new Event('input')); // Déclencher l'événement pour afficher tous les éléments
     }
 });
