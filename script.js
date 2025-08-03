@@ -4,19 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('m3u-file-input');
     const mediaListDiv = document.getElementById('media-list');
     const statusDiv = document.getElementById('status');
+    
+    // AJOUT : Références pour la recherche
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('search-input');
 
     // Gérer le clic sur le bouton "Charger"
     loadFromUrlBtn.addEventListener('click', () => {
         const url = urlInput.value.trim();
         if (url) {
             statusDiv.textContent = 'Chargement depuis l\'URL...';
-            // Note: Peut être bloqué par CORS si le serveur distant ne l'autorise pas.
-            // Utiliser un proxy CORS pourrait être nécessaire dans certains cas.
             fetch(url)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Erreur réseau : ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Erreur réseau : ${response.statusText}`);
                     return response.text();
                 })
                 .then(data => parseM3U(data))
@@ -36,20 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file) {
             statusDiv.textContent = 'Lecture du fichier local...';
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                parseM3U(content);
-            };
+            reader.onload = (e) => parseM3U(e.target.result);
             reader.readAsText(file);
         }
     });
 
     /**
-     * Analyse le contenu M3U pour extraire les titres et les URL.
+     * Analyse le contenu M3U.
      * @param {string} m3uContent Le contenu brut du fichier M3U.
      */
     function parseM3U(m3uContent) {
-        mediaListDiv.innerHTML = ''; // Nettoyer les anciens résultats
+        mediaListDiv.innerHTML = '';
+        searchContainer.style.display = 'none'; // Cacher la recherche pendant l'analyse
         statusDiv.textContent = 'Analyse du contenu...';
 
         const lines = m3uContent.split('\n');
@@ -59,11 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const line of lines) {
             const trimmedLine = line.trim();
             if (trimmedLine.startsWith('#EXTINF:')) {
-                // Extrait le nom depuis tvg-name="..."
                 const nameMatch = trimmedLine.match(/tvg-name="([^"]*)"/);
-                // Si tvg-name n'existe pas, prend ce qui suit la virgule
                 const fallbackName = trimmedLine.split(',').pop();
-                
                 currentItem = {
                     title: nameMatch ? nameMatch[1] : (fallbackName || 'Titre inconnu'),
                     url: ''
@@ -71,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (currentItem && (trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://'))) {
                 currentItem.url = trimmedLine;
                 mediaItems.push(currentItem);
-                currentItem = null; // Réinitialiser pour le prochain item
+                currentItem = null;
             }
         }
         
@@ -86,10 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Affiche les médias trouvés dans le DOM.
+     * Affiche les médias trouvés et active la barre de recherche.
      * @param {Array<{title: string, url: string}>} mediaItems 
      */
     function displayMedia(mediaItems) {
+        // Vider la liste avant de la remplir
+        mediaListDiv.innerHTML = '';
+
         for (const item of mediaItems) {
             const div = document.createElement('div');
             div.className = 'media-item';
@@ -106,8 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadLink.className = 'download-link';
             downloadLink.href = item.url;
             downloadLink.textContent = 'Télécharger';
-            // L'attribut 'download' suggère au navigateur de télécharger le fichier
-            // au lieu de naviguer vers l'URL.
             downloadLink.setAttribute('download', ''); 
 
             div.appendChild(titleP);
@@ -116,5 +112,25 @@ document.addEventListener('DOMContentLoaded', () => {
             
             mediaListDiv.appendChild(div);
         }
+
+        // AJOUT : Afficher la barre de recherche s'il y a des résultats
+        if(mediaItems.length > 0) {
+            searchContainer.style.display = 'block';
+        }
     }
+
+    // AJOUT : Écouteur d'événement pour la recherche en temps réel
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const allItems = document.querySelectorAll('.media-item');
+
+        allItems.forEach(item => {
+            const title = item.querySelector('.title').textContent.toLowerCase();
+            if (title.includes(searchTerm)) {
+                item.style.display = 'flex'; // Afficher l'élément
+            } else {
+                item.style.display = 'none'; // Cacher l'élément
+            }
+        });
+    });
 });

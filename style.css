@@ -34,7 +34,8 @@ h1, h2 {
     margin-bottom: 25px;
 }
 
-input[type="text"], input[type="file"] {
+/* AJOUT : Prise en charge du champ de recherche */
+input[type="text"], input[type="file"], input[type="search"] {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
@@ -60,6 +61,11 @@ button:hover {
     background-color: #018786;
 }
 
+/* AJOUT : Cacher la barre de recherche par défaut */
+#search-container {
+    display: none;
+}
+
 #status {
     margin-top: 15px;
     font-style: italic;
@@ -70,7 +76,8 @@ button:hover {
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
-    display: flex;
+    /* MODIFIÉ : display: flex est important pour la recherche */
+    display: flex; 
     flex-direction: column;
     gap: 10px;
     border-left: 5px solid #bb86fc;
