@@ -3,36 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyseur M3U Downloader</title>
+    <title>M3U Média Explorer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Analyseur de Fichiers M3U</h1>
+        <h1>M3U Média Explorer</h1>
         <p class="warning">
-            ⚠️ Assurez-vous d'avoir les droits nécessaires pour télécharger le contenu de ce fichier.
+            ⚠️ Assurez-vous d'avoir les droits nécessaires pour le contenu de ce fichier.
         </p>
 
         <div class="input-group">
-            <h2>Charger depuis une URL</h2>
+            <h2>Charger un fichier M3U</h2>
             <input type="text" id="m3u-url-input" placeholder="Collez l'URL du fichier .m3u ici">
-            <button id="load-from-url-btn">Charger</button>
-        </div>
-
-        <div class="input-group">
-            <h2>Ou charger un fichier local</h2>
+            <button id="load-from-url-btn">Charger depuis URL</button>
             <input type="file" id="m3u-file-input" accept=".m3u, .m3u8">
         </div>
 
-        <div id="search-container" class="input-group">
-            <h2>Rechercher dans les résultats</h2>
-            <input type="search" id="search-input" placeholder="Tapez un nom de film ou série...">
+        <div id="status"></div>
+        
+        <div class="category-tabs">
+            <button id="films-tab" class="tab-btn active">Films <span id="films-count"></span></button>
+            <button id="series-tab" class="tab-btn">Séries <span id="series-count"></span></button>
+            <button id="chaines-tab" class="tab-btn">Chaînes <span id="chaines-count"></span></button>
         </div>
 
-        <div id="status"></div>
+        <div id="search-container" class="input-group">
+            <input type="search" id="search-input" placeholder="Rechercher dans la catégorie active...">
+        </div>
 
-        <div id="media-list">
-            </div>
+        <div id="films-list" class="media-grid active"></div>
+        <div id="series-list" class="media-grid"></div>
+        <div id="chaines-list" class="media-grid"></div>
+
     </div>
     <script src="script.js"></script>
 </body>

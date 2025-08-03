@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 95%;
     margin: auto;
     background-color: #1e1e1e;
     padding: 25px;
@@ -21,20 +21,10 @@ h1, h2 {
     padding-bottom: 10px;
 }
 
-.warning {
-    background-color: #442b00;
-    border: 1px solid #ffb74d;
-    color: #ffb74d;
-    padding: 10px;
-    border-radius: 5px;
-    text-align: center;
-}
-
 .input-group {
     margin-bottom: 25px;
 }
 
-/* AJOUT : Prise en charge du champ de recherche */
 input[type="text"], input[type="file"], input[type="search"] {
     width: 100%;
     padding: 10px;
@@ -46,54 +36,67 @@ input[type="text"], input[type="file"], input[type="search"] {
     border-radius: 5px;
 }
 
-button {
-    background-color: #03dac6;
-    color: #121212;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 5px;
-    font-weight: bold;
+/* NOUVEAU : Style pour les onglets */
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #373737;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    font-size: 1em;
     cursor: pointer;
-    transition: background-color 0.3s;
+    background-color: #333;
+    border: 1px solid #555;
+    color: #e0e0e0;
+    border-radius: 5px 5px 0 0;
+    border-bottom: none;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-button:hover {
-    background-color: #018786;
+.tab-btn:hover {
+    background-color: #444;
 }
 
-/* AJOUT : Cacher la barre de recherche par défaut */
+.tab-btn.active {
+    background-color: #bb86fc;
+    color: #121212;
+    font-weight: bold;
+}
+
 #search-container {
-    display: none;
+    display: none; /* Caché par défaut */
 }
 
-#status {
-    margin-top: 15px;
-    font-style: italic;
+/* NOUVEAU : Grille pour afficher les médias */
+.media-grid {
+    display: none; /* Caché par défaut */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.media-grid.active {
+    display: grid; /* Affiché quand actif */
 }
 
 .media-item {
     background-color: #2a2a2a;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 15px;
-    /* MODIFIÉ : display: flex est important pour la recherche */
-    display: flex; 
+    display: flex;
     flex-direction: column;
     gap: 10px;
     border-left: 5px solid #bb86fc;
 }
 
 .media-item .title {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     margin: 0;
-}
-
-.media-item .url {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.9em;
-    color: #aaa;
-    word-break: break-all;
+    flex-grow: 1; /* Pour que les boîtes aient la même hauteur */
 }
 
 .media-item .download-link {
@@ -105,9 +108,13 @@ button:hover {
     padding: 10px 15px;
     border-radius: 5px;
     font-weight: bold;
+    text-align: center;
     transition: background-color 0.3s;
 }
 
 .media-item .download-link:hover {
     background-color: #018786;
 }
+
+/* Le reste du CSS (warning, url, etc.) peut rester */
+.warning, .url { /* ... */ }
