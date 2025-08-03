@@ -15,10 +15,25 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
-h1, h2 {
+h1 {
+    text-align: center;
+    color: #bb86fc;
+}
+
+h2 {
     color: #bb86fc;
     border-bottom: 2px solid #373737;
     padding-bottom: 10px;
+}
+
+.warning {
+    background-color: #442b00;
+    border: 1px solid #ffb74d;
+    color: #ffb74d;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .input-group {
@@ -36,9 +51,26 @@ input[type="text"], input[type="file"], input[type="search"] {
     border-radius: 5px;
 }
 
-/* NOUVEAU : Style pour les onglets */
+button, .download-link {
+    background-color: #03dac6;
+    color: #121212;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover, .download-link:hover {
+    background-color: #018786;
+}
+
 .category-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
     border-bottom: 1px solid #373737;
@@ -64,57 +96,64 @@ input[type="text"], input[type="file"], input[type="search"] {
 .tab-btn.active {
     background-color: #bb86fc;
     color: #121212;
-    font-weight: bold;
 }
 
 #search-container {
-    display: none; /* Caché par défaut */
+    display: none;
 }
 
-/* NOUVEAU : Grille pour afficher les médias */
 .media-grid {
-    display: none; /* Caché par défaut */
+    display: none;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
 
 .media-grid.active {
-    display: grid; /* Affiché quand actif */
+    display: grid;
 }
 
 .media-item {
     background-color: #2a2a2a;
-    padding: 15px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    border-left: 5px solid #bb86fc;
+    overflow: hidden; /* Pour que les coins arrondis de l'image fonctionnent */
+    transition: transform 0.2s;
+}
+
+.media-item:hover {
+    transform: translateY(-5px);
+}
+
+.media-item-logo {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.media-item-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .media-item .title {
     font-size: 1.1em;
     font-weight: bold;
-    margin: 0;
-    flex-grow: 1; /* Pour que les boîtes aient la même hauteur */
+    margin: 0 0 15px 0;
+    flex-grow: 1;
 }
 
 .media-item .download-link {
-    display: inline-block;
     align-self: flex-start;
-    text-decoration: none;
-    background-color: #03dac6;
-    color: #121212;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-weight: bold;
+    width: 100%;
     text-align: center;
-    transition: background-color 0.3s;
 }
 
-.media-item .download-link:hover {
-    background-color: #018786;
+#status {
+    margin: 15px 0;
+    font-style: italic;
+    text-align: center;
 }
-
-/* Le reste du CSS (warning, url, etc.) peut rester */
-.warning, .url { /* ... */ }
