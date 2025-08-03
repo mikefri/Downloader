@@ -140,6 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const img = document.createElement('img');
             img.className = 'media-item-logo';
+            
+            // --- OPTIMISATION ICI ---
+            img.loading = 'lazy'; // Dit au navigateur d'attendre avant de charger l'image
+            
             img.src = item.logo || placeholderLogo;
             img.alt = item.title;
             img.onerror = () => { img.src = placeholderLogo; };
@@ -154,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadLink = document.createElement('a');
             downloadLink.className = 'download-link';
             
-            // L'URL du proxy pointe maintenant vers /api/
             const proxyBaseUrl = 'https://proxy-downloader.vercel.app/api/?'; 
             
             const params = new URLSearchParams({
