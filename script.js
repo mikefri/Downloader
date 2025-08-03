@@ -1,24 +1,91 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (tout le début du code reste identique) ...
     const urlInput = document.getElementById('m3u-url-input');
     const loadFromUrlBtn = document.getElementById('load-from-url-btn');
     const fileInput = document.getElementById('m3u-file-input');
     const mediaListDiv = document.getElementById('media-list');
     const statusDiv = document.getElementById('status');
+    
+    // AJOUT : Références pour la recherche
     const searchContainer = document.getElementById('search-container');
     const searchInput = document.getElementById('search-input');
 
+    // Gérer le clic sur le bouton "Charger"
+    loadFromUrlBtn.addEventListener('click', () => {
+        const url = urlInput.value.trim();
+        if (url) {
+            statusDiv.textContent = 'Chargement depuis l\'URL...';
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Erreur réseau : ${response.statusText}`);
+                    return response.text();
+                })
+                .then(data => parseM3U(data))
+                .catch(error => {
+                    statusDiv.textContent = `Erreur : ${error.message}. Le serveur distant bloque peut-être la requête (CORS).`;
+                    statusDiv.style.color = 'red';
+                });
+        } else {
+            statusDiv.textContent = 'Veuillez entrer une URL valide.';
+            statusDiv.style.color = 'orange';
+        }
+    });
 
-    // ... (les fonctions loadFromUrl, loadFromFile, parseM3U restent identiques) ...
-    function loadFromUrlBtn_click() { /* ... */ }
-    function fileInput_change(event) { /* ... */ }
-    function parseM3U(m3uContent) { /* ... */ }
-
+    // Gérer la sélection d'un fichier local
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            statusDiv.textContent = 'Lecture du fichier local...';
+            const reader = new FileReader();
+            reader.onload = (e) => parseM3U(e.target.result);
+            reader.readAsText(file);
+        }
+    });
 
     /**
-     * MODIFIÉ : Affiche les médias et attache un nouvel écouteur de clic
+     * Analyse le contenu M3U.
+     * @param {string} m3uContent Le contenu brut du fichier M3U.
+     */
+    function parseM3U(m3uContent) {
+        mediaListDiv.innerHTML = '';
+        searchContainer.style.display = 'none'; // Cacher la recherche pendant l'analyse
+        statusDiv.textContent = 'Analyse du contenu...';
+
+        const lines = m3uContent.split('\n');
+        const mediaItems = [];
+        let currentItem = null;
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('#EXTINF:')) {
+                const nameMatch = trimmedLine.match(/tvg-name="([^"]*)"/);
+                const fallbackName = trimmedLine.split(',').pop();
+                currentItem = {
+                    title: nameMatch ? nameMatch[1] : (fallbackName || 'Titre inconnu'),
+                    url: ''
+                };
+            } else if (currentItem && (trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://'))) {
+                currentItem.url = trimmedLine;
+                mediaItems.push(currentItem);
+                currentItem = null;
+            }
+        }
+        
+        if (mediaItems.length > 0) {
+            statusDiv.textContent = `${mediaItems.length} média(s) trouvé(s).`;
+            statusDiv.style.color = '#03dac6';
+            displayMedia(mediaItems);
+        } else {
+            statusDiv.textContent = 'Aucun média valide trouvé dans le fichier.';
+            statusDiv.style.color = 'orange';
+        }
+    }
+
+    /**
+     * Affiche les médias trouvés et active la barre de recherche.
+     * @param {Array<{title: string, url: string}>} mediaItems 
      */
     function displayMedia(mediaItems) {
+        // Vider la liste avant de la remplir
         mediaListDiv.innerHTML = '';
 
         for (const item of mediaItems) {
@@ -28,77 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleP = document.createElement('p');
             titleP.className = 'title';
             titleP.textContent = item.title;
-            div.appendChild(titleP);
 
             const urlP = document.createElement('p');
             urlP.className = 'url';
             urlP.textContent = `URL: ${item.url}`;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.className = 'download-link';
+            downloadLink.href = item.url;
+            downloadLink.textContent = 'Télécharger';
+            downloadLink.setAttribute('download', ''); 
+
+            div.appendChild(titleP);
             div.appendChild(urlP);
-
-            const downloadButton = document.createElement('button'); // On utilise un bouton
-            downloadButton.className = 'download-link'; // On garde le même style
-            downloadButton.textContent = 'Télécharger';
-
-            // On attache l'événement de téléchargement au clic
-            downloadButton.addEventListener('click', () => {
-                statusDiv.textContent = `Tentative de téléchargement de : ${item.title}...`;
-                statusDiv.style.color = 'orange';
-                downloadFile(item.url, item.title);
-            });
-
-            div.appendChild(downloadButton);
+            div.appendChild(downloadLink);
+            
             mediaListDiv.appendChild(div);
         }
 
-        if (mediaItems.length > 0) {
+        // AJOUT : Afficher la barre de recherche s'il y a des résultats
+        if(mediaItems.length > 0) {
             searchContainer.style.display = 'block';
         }
     }
 
-    /**
-     * NOUVEAU : Tente de télécharger un fichier via fetch et Blob.
-     * @param {string} url L'URL du fichier à télécharger.
-     * @param {string} filename Le nom du fichier à sauvegarder.
-     */
-    async function downloadFile(url, filename) {
-        try {
-            // 1. Tenter de récupérer le fichier. C'est ici que l'erreur CORS se produira le plus souvent.
-            const response = await fetch(url);
+    // AJOUT : Écouteur d'événement pour la recherche en temps réel
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const allItems = document.querySelectorAll('.media-item');
 
-            if (!response.ok) {
-                throw new Error(`Le serveur a répondu avec une erreur: ${response.statusText}`);
+        allItems.forEach(item => {
+            const title = item.querySelector('.title').textContent.toLowerCase();
+            if (title.includes(searchTerm)) {
+                item.style.display = 'flex'; // Afficher l'élément
+            } else {
+                item.style.display = 'none'; // Cacher l'élément
             }
-
-            // 2. Lire les données comme un "Blob" (un objet binaire).
-            const blob = await response.blob();
-
-            // 3. Créer une URL locale temporaire pour ce Blob.
-            const blobUrl = window.URL.createObjectURL(blob);
-
-            // 4. Créer un lien d'ancrage invisible pour déclencher le téléchargement.
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = blobUrl;
-            // Essayer d'extraire l'extension du fichier original
-            const extension = url.split('.').pop();
-            a.download = `${filename}.${extension}` || 'download';
-            document.body.appendChild(a);
-
-            // 5. Cliquer sur le lien et le retirer.
-            a.click();
-            window.URL.revokeObjectURL(blobUrl);
-            a.remove();
-            
-            statusDiv.textContent = `Téléchargement de "${filename}" initié !`;
-            statusDiv.style.color = '#03dac6';
-
-        } catch (error) {
-            console.error('Erreur de téléchargement:', error);
-            statusDiv.innerHTML = `<b>Échec du téléchargement.</b> Raison : ${error.message}.<br>Ceci est probablement dû à une restriction de sécurité (CORS). <b>Utilisez le clic droit sur le lien original si possible.</b>`;
-            statusDiv.style.color = 'red';
-        }
-    }
-    
-    // ... (l'écouteur d'événement pour la recherche reste identique) ...
-    searchInput.addEventListener('input', () => { /* ... */ });
+        });
+    });
 });
