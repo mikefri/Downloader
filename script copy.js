@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     allMedia.chaines.push(currentItem);
                 } else if (currentItem.group.includes('SERIES')) {
                     allMedia.series.push(currentItem);
-                } else if (/\(\d{4}\)/.test(currentItem.title) || currentItem.group.includes('FILMS')) { // Condition élargie
+                } else if (/\(\d{4}\)/.test(currentItem.title)) {
                     allMedia.films.push(currentItem);
                 }
                 currentItem = null;
@@ -140,7 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const img = document.createElement('img');
             img.className = 'media-item-logo';
-            img.loading = 'lazy';
+            
+            // --- OPTIMISATION ICI ---
+            img.loading = 'lazy'; // Dit au navigateur d'attendre avant de charger l'image
+            
             img.src = item.logo || placeholderLogo;
             img.alt = item.title;
             img.onerror = () => { img.src = placeholderLogo; };
@@ -150,3 +153,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const titleP = document.createElement('p');
             titleP.className = 'title';
+            titleP.textContent = item.title;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.className = 'download-link';
+            
+            const proxyBaseUrl = 'https://proxy-downloader.vercel.app/api/?'; 
+            
+            const params = new URLSearchParams({
+                url: item.url,
+                title: item.title 
+            });
+            downloadLink.href = proxyBaseUrl + params.toString();
+            
+            downloadLink.textContent = 'Télécharger';
+            downloadLink.setAttribute('download', item.title); 
+
+            contentDiv.appendChild(titleP);
+            contentDiv.appendChild(downloadLink);
+            
+            div.appendChild(img);
+            div.appendChild(contentDiv);
+            listElement.appendChild(div);
+        });
+    }
+
+    function showCategory(categoryToShow) {
+        Object.keys(tabs).forEach(category => {
+            const isActive = category === categoryToShow;
+            tabs[category].classList.toggle('active', isActive);
+            lists[category].classList.toggle('active', isActive);
+        });
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+    }
+});
